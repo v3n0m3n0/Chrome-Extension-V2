@@ -1,0 +1,6 @@
+{
+  "summary": "Plan przygotowania wersji produkcyjnej Chrome Extension (v0.1.0) przed wysłaniem na GitHub, obejmujący podbicie wersji, synchronizację metadanych produkcyjnych, pełną aktualizację dokumentacji README i CHANGELOG z instrukcją instalacji oraz kompilację czystego katalogu dist.",
+  "updatedAt": "2026-11-02T22:19:24.508951181Z",
+  "requestFeedback": true,
+  "userFacing": true
+}
