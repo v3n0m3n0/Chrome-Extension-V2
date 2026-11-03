@@ -1,106 +1,93 @@
-# Przygotowanie Wersji Produkcyjnej Chrome Extension (v0.1.0) Przed Wysłaniem na GitHub
+# Przygotowanie Produkcyjnej Paczki ZIP do Chrome Web Store
 
-Kompleksowy plan walidacji, standaryzacji metadanych i przygotowania stabilnego wydania produkcyjnego rozszerzenia Gemini Page Lens w wersji v0.1.0, gotowego do bezpośredniego zatwierdzenia w repozytorium GitHub i załadowania w trybie deweloperskim przeglądarki Chrome.
+Przygotowanie oficjalnej, zoptymalizowanej paczki archiwalnej `.zip` rozszerzenia Chrome w wersji v0.1.0 w dedykowanym katalogu `release/`, zintegrowanej ze skryptem automatyzacji `npm run build:zip` w `package.json` oraz pełną weryfikacją zgodności z wymogami Chrome Web Store (Manifest V3, brak plików deweloperskich i niepotrzebnych map).
 
-### User Review & Critical Decisions
+## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> Podsumowanie decyzji uzgodnionych z użytkownikiem w Fazie 1:
+> Podsumowanie decyzji potwierdzonych przez użytkownika w fazie wywiadu:
 
-- **Numer wersji (Confirmed)**: Podbicie wersji do `0.1.0` (pierwsze stabilne wydanie produkcyjne) w `package.json` oraz `public/manifest.json`.
-- **Format dystrybucji (Confirmed)**: Kompilacja i weryfikacja czystego katalogu produkcyjnego `dist/` (bez generowania dodatkowego archiwum ZIP).
-- **Zakres dokumentacji (Confirmed)**: Pełna aktualizacja `README.md` oraz `CHANGELOG.md` o wszystkie nowo dodane funkcje (Web Speech TTS, Radar Obiektywizmu i Clickbaitu, analiza ostatnich 60s YouTube, Macierz Porównawcza Kart, Hybrydowy RAG ze stemmingiem PL oraz Dwujęzyczny czytnik in-page), wraz z instrukcją instalacji w Google Chrome (`chrome://extensions`).
-
----
-
-### 1. Overview & Core Concept
-
-- **Cel wydania**: Przygotowanie kompletnego, przetestowanego i przejrzystego stanu repozytorium przed zatwierdzeniem zmian i wypchnięciem do zdalnego repozytorium GitHub (`https://github.com/v3n0m3n0/Chrome-Extension.git`).
-- **Odbiorcy**: Użytkownicy końcowi instalujący rozszerzenie lokalnie w Google Chrome (poprzez tryb „Załaduj rozpakowane”) oraz deweloperzy przeglądający kod źródłowy i dokumentację techniczną na GitHubie.
-- **Kluczowa wartość**: Zapewnienie zerowego długu technicznego, pełnej spójności numeracji wersji, aktualnej dokumentacji z przykładami użycia oraz gwarancji, że kod źródłowy buduje się w 100% deterministycznie i bezbłędnie.
+- **Lokalizacja i format paczki**: Zgodnie z wyborem użytkownika, skompilowane archiwum zostanie umieszczone w dedykowanym katalogu `release/` pod nazwą `release/chrome-extension-v0.1.0.zip`.
+- **Automatyzacja budowania**: W `package.json` zostanie zdefiniowany dedykowany skrypt `npm run build:zip` łączący weryfikację typów, kompilację produkcyjną Vite (`tsc && vite build`) oraz pakowanie czystej zawartości katalogu `dist/` do pliku zip.
+- **Higiena paczki Chrome Web Store**: Archiwum ZIP zawierać będzie wyłącznie pliki runtime z `dist/` (manifest.json, background.js, content.js, sidepanel.html, assets, ikony) bez plików testowych (`*.test.*`), kodu źródłowego TypeScript (`src/`), plików konfiguracyjnych dewelopera ani zbędnych plików systemowych (`.DS_Store`, `Thumbs.db`).
 
 ---
 
-### 2. User Experience & Release Documentation
+## 1. Overview & Core Concept
 
-- **Dokumentacja instalacji w przeglądarce Chrome**:
-  - Krok po kroku: wejście na `chrome://extensions/`, włączenie suwaka „Tryb programisty”, kliknięcie „Załaduj rozpakowane” i wskazanie skompilowanego folderu `dist/`.
-  - Instrukcja konfiguracji klucza API z Google AI Studio oraz opcjonalnego włączenia wbudowanego modelu On-Device Gemini Nano.
-- **Aktualizacja README.md**:
-  - Opis wszystkich 6 nowych modułów funkcjonalnych dodanych w ramach etapów 1–3:
-    1. *Odsłuch podsumowań i raportów (Web Speech API)* — bezpłatny lektor mowy offline z wyborem prędkości.
-    2. *Radar Obiektywizmu i Clickbaitu (Bias & Spin Radar)* — wielowymiarowy wskaźnik neutralności, emocjonalności i clickbaitu.
-    3. *YouTube Video Intelligence z analizą ostatnich 60 sekund* — interaktywna transkrypcja z wyszukiwarką i synchronizacją kadru.
-    4. *Macierz Porównawcza Otwartych Kart* — konsensus, rozbieżności i unikalne tezy dla wielu kart jednocześnie.
-    5. *Hybrydowy RAG Bazy Wiedzy* — Gemini Embeddings + polski stemming leksykalny z rankingiem cosinusowym.
-    6. *Dwujęzyczny Czytnik In-Page* — wstrzykiwanie przetłumaczonych akapitów bezpośrednio pod oryginałem na stronach artykułów.
-  - Tabela skrótów klawiszowych: `Alt+G`, `Alt+S`, `Alt+V`.
-- **Aktualizacja CHANGELOG.md**:
-  - Wpis dla wersji `[0.1.0]` z wyszczególnieniem sekcji `Added`, `Changed`, `Refactored` i `Security`.
+- **Cel**: Wygenerowanie gotowej do wgrania w Chrome Developer Dashboard paczki instalacyjnej ZIP spełniającej standardy Google Chrome Web Store.
+- **Wersja wydania**: `0.1.0` (zgodna z `package.json` oraz `manifest.json`).
+- **Główna wartość**: Pewność, że paczka zawiera wszystkie moduły z 3 etapów ewolucji (TTS, Baza wiedzy, Weryfikacja, Dwujęzyczny czytnik, Bypass paywalli) w zminifikowanej, produkcyjnej formie, gotowej do natychmiastowej certyfikacji w sklepie.
 
 ---
 
-### 3. Key Product Decisions & Trade-Offs
+## 2. User Experience & Visual Design (Struktura Paczki)
 
-- **Wydanie v0.1.0 zamiast v0.0.7 / v1.0.0**:
-  - *Wybrane podejście*: Numer wersji `0.1.0` w `package.json` i `public/manifest.json`.
-  - *Uzasadnienie*: Projekt przeszedł gruntowny refaktoring modułowy oraz zyskał 3 pełne etapy nowych zaawansowanych możliwości AI. Wersja `0.1.0` komunikuje stabilny, dojrzały kamień milowy przed oficjalną publikacją w Chrome Web Store.
-- **Wykluczenie plików tymczasowych i testowych z paczki produkcyjnej**:
-  - *Wybrane podejście*: Weryfikacja `.gitignore`, aby artefakty deweloperskie, logi, `.DS_Store` i foldery tymczasowe nie trafiły do commita git.
-
----
-
-### 4. Technical Architecture & Release Pipeline
+Paczka ZIP po rozpakowaniu przez Chrome Web Store musi posiadać bezpośrednio w korzeniu plik `manifest.json` oraz powiązane zasoby (brak zagnieżdżonego podfolderu `dist/` wewnątrz archiwum, co jest częstym błędem powodującym odrzucenie w panelu Google):
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       PROCES WYDANIA PRODUKCYJNEGO v0.1.0                   │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 1. Synchronizacja Wersji i Manifestu                                        │
-│    • package.json: version = "0.1.0"                                        │
-│    • public/manifest.json: version = "0.1.0"                                │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 2. Aktualizacja Dokumentacji Repozytorium                                   │
-│    • README.md: nowe funkcje, skróty klawiszowe, instrukcja instalacji       │
-│    • CHANGELOG.md: rejestr zmian v0.1.0 (Added, Changed, Security)          │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 3. Weryfikacja Jakości i Regresji                                           │
-│    • npm test (24/24 zestawy testów, 429+ testów jednostkowych i UI)        │
-│    • TypeScript check: tsc --noEmit (0 błędów typowania)                    │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 4. Kompilacja Produkcyjna                                                   │
-│    • npm run build -> generuje czysty, zoptymalizowany katalog dist/        │
-│    • Manifest V3 ready do załadowania w chrome://extensions/                │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 5. Stan Repozytorium Git Gotowy do Wysłania                                 │
-│    • git status czysty, gotowy do: git add . && git commit                  │
-└─────────────────────────────────────────────────────────────────────────────┘
+chrome-extension-v0.1.0.zip (korzeń archiwum):
+├── manifest.json              # Manifest V3 (wersja 0.1.0, permissions, icons)
+├── background.js              # Service Worker rozszerzenia
+├── content.js                 # Skrypt wstrzykiwany (ekstrakcja, bypass, TTS, highlighter)
+├── sidepanel.html             # Interfejs bocznego panelu Chrome
+├── assets/                    # Skompilowane bundle JS, CSS i assety UI
+└── icons/                     # Ikony rozszerzenia (16, 32, 48, 128 px)
 ```
 
-### Harmonogram realizacji krok po kroku
+---
 
-1. **Aktualizacja numeru wersji**:
-   - Ustawienie `"version": "0.1.0"` w `/tmp/Chrome-Extension/package.json` oraz `/tmp/Chrome-Extension/public/manifest.json`.
-2. **Aktualizacja README.md i CHANGELOG.md**:
-   - Wzbogacenie `README.md` o instrukcję instalacji w Chrome, tabelę skrótów klawiszowych oraz omówienie nowych modułów.
-   - Dodanie sekcji `[0.1.0]` w `CHANGELOG.md`.
-3. **Weryfikacja jakościowa i budowanie**:
-   - Uruchomienie `npm test` dla potwierdzenia stuprocentowej zgodności regresyjnej.
-   - Uruchomienie `npm run build` w celu skompilowania świeżego katalogu `dist/`.
-4. **Inspekcja czystości repozytorium**:
-   - Sprawdzenie `git status` oraz podsumowanie przygotowanych plików przed commitem i wysłaniem na GitHub.
+## 3. Key Product Decisions & Trade-Offs
+
+- **Struktura archiwum (Flat dist packaging)**:
+  - *Wybrane podejście*: Archiwizacja bezpośrednio z poziomu katalogu `dist/` (`cd dist && zip -r ../release/chrome-extension-v0.1.0.zip .`).
+  - *Dlaczego*: Chrome Web Store wymaga, aby `manifest.json` znajdował się bezpośrednio w głównym katalogu archiwum ZIP. Wrzucenie folderu `dist/` jako podkatalogu uniemożliwia weryfikację w panelu dewelopera.
+- **Narzędzie do tworzenia ZIP**:
+  - *Wybrane podejście*: Użycie narzędzia systemowego `zip` w powłoce oraz skryptu Node.js / npm cross-platform w `scripts/package-zip.js` lub zwięzłego polecenia npm, aby proces był powtarzalny w środowiskach CI/CD.
+- **Katalog `release/` w `.gitignore`**:
+  - *Wybrane podejście*: Upewnienie się, że `release/*.zip` jest uwzględnione lub dodane do repozytorium w zależności od potrzeb release workflow.
+
+---
+
+## 4. Technical Architecture & Data Strategy
+
+### Schemat procesu budowania i pakowania wydania:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   npm run build:zip                         │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+            ┌──────────────────▼──────────────────┐
+            │  1. Kontrola typów i testy         │
+            │     tsc && npm test                 │
+            │     (429/429 testów, 0 błędów TS)   │
+            └──────────────────┬──────────────────┘
+                               │
+            ┌──────────────────▼──────────────────┐
+            │  2. Kompilacja Vite                 │
+            │     vite build                      │
+            │     -> Czysty katalog /dist         │
+            └──────────────────┬──────────────────┘
+                               │
+            ┌──────────────────▼──────────────────┐
+            │  3. Pakowanie do archiwum ZIP       │
+            │     mkdir -p release                │
+            │     cd dist && zip -r -9 ...        │
+            │     -> release/chrome-ext-v0.1.0.zip│
+            └──────────────────┬──────────────────┘
+                               │
+            ┌──────────────────▼──────────────────┐
+            │  4. Walidacja zawartości archiwum   │
+            │     - Sprawdzenie manifest.json     │
+            │     - Weryfikacja rozmiaru i sumy   │
+            └─────────────────────────────────────┘
+```
+
+### Plan realizacji krok po kroku (po zatwierdzeniu planu):
+1. Utworzenie katalogu `release/` w `/tmp/Chrome-Extension`.
+2. Dodanie do `package.json` skryptu `"build:zip": "npm run build && node scripts/package-zip.js"` (lub bezpośredniego polecenia pakującego).
+3. Przygotowanie niezawodnego skryptu `scripts/package-zip.js` korzystającego z wbudowanych mechanizmów Node.js / archiver, gwarantującego czyste pakowanie bez śmieci systemowych.
+4. Uruchomienie `npm run build:zip` i wygenerowanie `release/chrome-extension-v0.1.0.zip`.
+5. Weryfikacja integralności archiwum: inspekcja listy plików (`unzip -l`), sprawdzenie obecności `manifest.json`, obliczenie rozmiaru i sumy kontrolnej SHA-256.
+6. Commit zmian konfiguracyjnych w repozytorium git.
